@@ -20,6 +20,7 @@ import com.vaadin.flow.data.binder.ValidationException
 import com.vaadin.flow.data.validator.EmailValidator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class EmployeeFormDialog(
@@ -126,11 +127,14 @@ class EmployeeFormDialog(
         try {
             val employee = currentEmployee ?: Employee()
             binder.writeBean(employee) // Validate form
+            close()
             CoroutineScope(Dispatchers.IO).launch {
                 onSave(employee)
+//                ui.get().access {
+//
+//                }
             }
             setLoading(true)
-            close()
         } catch (e: ValidationException) {
             Notification.show("Fix validation errors", 3000, Notification.Position.MIDDLE)
         }

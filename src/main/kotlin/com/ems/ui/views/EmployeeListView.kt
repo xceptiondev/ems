@@ -15,6 +15,7 @@ import com.vaadin.flow.router.Route
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Route(value = "employees", layout = MainView::class)
 class EmployeeListView(
@@ -27,8 +28,10 @@ class EmployeeListView(
 
     private val employeeDialog = EmployeeFormDialog(
         onSave = { employee ->
-            employeeService.save(employee)
-            updateList()
+            CoroutineScope(Dispatchers.IO).launch {
+                employeeService.save(employee)
+                updateList()
+            }
         },
         onDelete = { employee ->
             CoroutineScope(Dispatchers.IO).launch {
@@ -73,8 +76,8 @@ class EmployeeListView(
     private fun updateList() {
         CoroutineScope(Dispatchers.IO).launch {
             val employees = employeeService.findAll()
-            CoroutineScope(Dispatchers.Main).launch{
-                grid.setItems(employees)
+            ui.get().access {
+                grid.setItems (employees)
             }
         }
     }

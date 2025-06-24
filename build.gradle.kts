@@ -3,7 +3,7 @@ plugins {
 	kotlin("plugin.spring") version "2.0.0"
 	id("org.springframework.boot") version "3.5.1"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("com.vaadin") version "24.3.0"
+	id("com.vaadin") version "24.8.0"
 	kotlin("plugin.jpa") version "2.0.0"
 }
 
@@ -20,15 +20,12 @@ repositories {
 	mavenCentral()
 }
 
-extra["vaadinVersion"] = "24.3.0"
+extra["vaadinVersion"] = "24.8.0"
 
 dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.1") // For Main dispatcher
-	implementation("com.vaadin:vaadin-spring-boot-starter:24.3.0")
-	implementation("com.vaadin:vaadin-core:24.3.0") {
-		because("We need Element.node.isDetached")
-	}
+	implementation("com.vaadin:vaadin-spring-boot-starter:24.8.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
