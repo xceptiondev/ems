@@ -1,28 +1,35 @@
 package com.ems.ui.components
 
 import com.ems.domain.Employee
+import com.ems.services.EmployeeService
 import com.vaadin.flow.component.*
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
+import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog
+import com.vaadin.flow.component.datepicker.DatePicker
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.H2
+import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.progressbar.ProgressBar
 import com.vaadin.flow.component.textfield.EmailField
+import com.vaadin.flow.component.textfield.NumberField
+import com.vaadin.flow.component.textfield.TextArea
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
-import com.vaadin.flow.data.binder.ValidationException
 import com.vaadin.flow.data.validator.EmailValidator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.time.LocalDate
 
 class EmployeeFormDialog(
+    private val employeeService: EmployeeService,
     private val onSave: suspend (Employee) -> Unit,
     private val onDelete: ((Employee) -> Unit)? = null
 ) : Dialog() {
@@ -30,6 +37,7 @@ class EmployeeFormDialog(
     // State
     private var isLoading = false
     private var currentEmployee: Employee? = null
+    val ui = UI.getCurrent()
 
     // Form Components
     private val header = H2("Employee Form").apply {
@@ -39,25 +47,90 @@ class EmployeeFormDialog(
         isIndeterminate = true
         isVisible = false
     }
+    // Form fields (declare these as class properties)
     private val firstName = TextField("First Name").apply {
-        isRequired = true
         setRequiredIndicatorVisible(true)
+        setWidthFull()
     }
+
     private val lastName = TextField("Last Name").apply {
-        isRequired = true
         setRequiredIndicatorVisible(true)
+        setWidthFull()
     }
+
     private val email = EmailField("Email").apply {
-        isRequired = true
         setRequiredIndicatorVisible(true)
+        setWidthFull()
+        addValueChangeListener {
+            if (it.value.isNotBlank() && it.value != currentEmployee?.email) {
+                checkEmailAvailability(it.value)
+            }
+        }
     }
-    private val position = TextField("Position")
-    private val department = TextField("Department")
+    private var isCheckingEmail = false
+
+    private fun checkEmailAvailability(email: String) {
+        isCheckingEmail = true
+        this.email.isInvalid = false
+        this.email.errorMessage = null
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val isAvailable = employeeService.isEmailAvailable(email, currentEmployee?.id)
+                ui.access {
+                    this@EmployeeFormDialog.email.isInvalid = !isAvailable
+                    this@EmployeeFormDialog.email.errorMessage =
+                        if (!isAvailable) "Email already registered" else null
+                    isCheckingEmail = false
+                    updateSaveButtonState()
+                }
+            } catch (e: Exception) {
+                ui.access {
+                    this@EmployeeFormDialog.email.isInvalid = true
+                    this@EmployeeFormDialog.email.errorMessage = "Error checking email availability"
+                    isCheckingEmail = false
+                    updateSaveButtonState()
+                }
+            }
+        }
+    }
+    private fun updateSaveButtonState() {
+        saveButton.isEnabled = binder.isValid && !isLoading && !isCheckingEmail
+    }
+    private val position = TextField("Position").apply {
+        setWidthFull()
+        addValueChangeListener { validateSalaryForManager() }
+    }
+
+    private val department = ComboBox<String>("Department").apply {
+        setItems("HR", "Engineering", "Finance", "Operations")
+        setWidthFull()
+    }
+
+    private val salary = NumberField("Salary").apply {
+        setPrefixComponent(Span("\$"))
+        setWidthFull()
+    }
+
+    private val hireDate = DatePicker("Hire Date").apply {
+        setWidthFull()
+    }
+
+    private val phoneNumber = TextField("Phone").apply {
+        setPattern("^[+\\d\\s-]*\$") // Live validation
+        setWidthFull()
+    }
+
+    private val address = TextArea("Address").apply {
+        setWidthFull()
+        setMaxLength(200)
+    }
 
     // Action Buttons
     private val saveButton = Button("Save", VaadinIcon.CHECK.create()).apply {
         addThemeVariants(ButtonVariant.LUMO_PRIMARY)
         isDisableOnClick = true
+        isEnabled = false
     }
     private val cancelButton = Button("Cancel")
     private val deleteButton = Button("Delete", VaadinIcon.TRASH.create()).apply {
@@ -67,17 +140,102 @@ class EmployeeFormDialog(
 
     // Binder with advanced validation
     private val binder = Binder<Employee>(Employee::class.java).apply {
+        // First Name
         forField(firstName)
-            .asRequired("Required")
-            .withValidator({ it.length >= 2 }, "Minimum 2 characters")
+            .asRequired("First name is required")
+            .withValidator(
+                { it.isNotBlank() && it.length >= 2 },
+                "Must be at least 2 characters"
+            )
+            .withValidationStatusHandler { status ->
+                firstName.isInvalid = status.isError
+                firstName.errorMessage = status.message.orElse(null)
+            }
             .bind(Employee::firstName, Employee::firstName::set)
 
+        // Last Name
+        forField(lastName)
+            .asRequired("Last name is required")
+            .withValidator(
+                { it.isNotBlank() && it.length >= 2 },
+                "Must be at least 2 characters"
+            )
+            .bind(Employee::lastName, Employee::lastName::set)
+
+        // Email
         forField(email)
-            .asRequired("Required")
-            .withValidator(EmailValidator("Invalid email"))
+            .asRequired("Email is required")
+            .withValidator(EmailValidator("Invalid email format"))
+            .withValidator({ value ->
+                runBlocking {
+                    try {
+                        employeeService.isEmailAvailable(value, currentEmployee?.id)
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+            }, "Email already registered")
             .bind(Employee::email, Employee::email::set)
 
-        // Other field bindings...
+        // Position
+        forField(position)
+            .withValidator(
+                { it.isNotBlank() },
+                "Position cannot be empty"
+            )
+            .bind(Employee::position, Employee::position::set)
+
+        // Department
+        forField(department)
+            .withConverter(
+                String::trim,
+                { it }
+            )
+            .withValidator(
+                { it.isNotBlank() },
+                "Please select a department"
+            )
+            .bind(Employee::department, Employee::department::set)
+
+        // Salary
+        forField(salary)
+            .withConverter(
+                { it ?: 0.0 },
+                { it.toDouble() }
+            )
+            .withValidator(
+                { it >= 0 },
+                "Salary cannot be negative"
+            )
+            .bind(Employee::salary, Employee::salary::set)
+
+        // Hire Date
+        forField(hireDate)
+            .withValidator(
+                { it != null && !it.isAfter(LocalDate.now()) },
+                "Hire date cannot be in the future"
+            )
+            .bind(Employee::hireDate, Employee::hireDate::set)
+
+        // Phone Number
+        forField(phoneNumber)
+            .withValidator(
+                { it.isNullOrBlank() || it.matches(Regex("^[+\\d\\s-]{10,}\$")) },
+                "Invalid phone number format"
+            )
+            .bind(Employee::phoneNumber, Employee::phoneNumber::set)
+
+        // Address
+        forField(address)
+            .withValidator(
+                { it.isNullOrBlank() || it.length >= 5 },
+                "Address too short"
+            )
+            .bind(Employee::address, Employee::address::set)
+
+        addStatusChangeListener { event -> saveButton.isEnabled = event.binder.isValid && !isLoading }
+
+        writeBeanIfValid(Employee()) // Initialize with empty employee
     }
 
     init {
@@ -92,7 +250,13 @@ class EmployeeFormDialog(
         deleteButton.isVisible = (employee != null && onDelete != null)
         open()
     }
+    private fun validateSalaryForManager() {
+        val isManager = position.value.equals("Manager", ignoreCase = true)
+        val isSalaryInvalid = (salary.value ?: 0.0) < 5000
 
+        salary.isInvalid = isManager && isSalaryInvalid
+        salary.errorMessage = if (salary.isInvalid) "Managers need ≥ 5000" else null
+    }
     private fun configureDialog() {
         isCloseOnEsc = true
         isCloseOnOutsideClick = false
@@ -103,7 +267,7 @@ class EmployeeFormDialog(
 
     private fun buildLayout() {
         val formLayout = FormLayout().apply {
-            add(firstName, lastName, email, position, department)
+            add(firstName, lastName, email, position, department, salary, hireDate, phoneNumber, address)
             setResponsiveSteps(FormLayout.ResponsiveStep("0", 2))
         }
 
@@ -122,31 +286,27 @@ class EmployeeFormDialog(
 
     private fun handleSave() {
         if (isLoading) return
-
-        try {
-            val employee = currentEmployee ?: Employee()
-            binder.writeBean(employee) // Validate form
-            CoroutineScope(Dispatchers.IO).launch {
-                onSave(employee)
-            }
+        val employee = currentEmployee ?: Employee()
+        if(binder.writeBeanIfValid(employee)){
             setLoading(true)
-            close()
-        } catch (e: ValidationException) {
-            Notification.show("Fix validation errors", 3000, Notification.Position.MIDDLE)
+            CoroutineScope(Dispatchers.IO).launch{
+                onSave(employee)
+                ui.access{
+                    setLoading(false)
+                    close()
+                }
+            }
         }
 
     }
 
-    // Required extension property
-    private val Dialog.isOpened: Boolean
-        get() = element.isVisible
-
     private fun handleDelete() {
         currentEmployee?.let { employee ->
-            ConfirmDialog(
+            val deleteDialog = ConfirmDialog(
                 "Confirm Delete",
                 "Delete ${employee.firstName} ${employee.lastName}?",
                 "Delete", {
+                    it.source.close()
                     onDelete?.invoke(employee)
                     close()
                 },
