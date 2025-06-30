@@ -17,6 +17,8 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.Route
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Route(value = "employees", layout = MainView::class)
@@ -30,8 +32,23 @@ class EmployeeListView(
         placeholder = "Filter by name or email"
         setPrefixComponent(VaadinIcon.SEARCH.create())
         setWidth("300px")
-        addValueChangeListener {
-            updateList(it.value)
+        setClearButtonVisible(true)
+
+        // For debouncing the input
+        var filterJob: Job? = null
+        val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+        addValueChangeListener { event ->
+            filterJob?.cancel() // Cancel previous request if still pending
+            filterJob = coroutineScope.launch {
+                delay(300) // Wait for 300ms of inactivity
+                updateList(event.value)
+            }
+        }
+
+        // Clear the job when component is detached
+        addDetachListener {
+            filterJob?.cancel()
         }
     }
     private val addButton = Button("Add Employee", VaadinIcon.PLUS.create()){
@@ -78,7 +95,7 @@ class EmployeeListView(
         }
 
         val filterLayout = HorizontalLayout(filter).apply {
-            justifyContentMode = FlexComponent.JustifyContentMode.END
+            justifyContentMode = FlexComponent.JustifyContentMode.CENTER
             setWidthFull()
         }
 
