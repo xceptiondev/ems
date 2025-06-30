@@ -23,8 +23,7 @@ repositories {
 extra["vaadinVersion"] = "24.8.0"
 
 dependencies {
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.1") // For Main dispatcher
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.0")
 	implementation("com.vaadin:vaadin-spring-boot-starter:24.8.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")

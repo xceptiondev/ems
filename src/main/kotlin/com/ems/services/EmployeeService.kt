@@ -13,7 +13,13 @@ class EmployeeService(private val repository: EmployeeRepository) {
     suspend fun findAll(): List<Employee> = withContext(Dispatchers.IO) {
         repository.findAll()
     }
-
+    suspend fun isEmailAvailable(email: String, excludeId: Long?): Boolean {
+        val employees = findAll()
+        return employees.none { employee ->
+            employee.email.equals(email, ignoreCase = true) &&
+                    (excludeId == null || employee.id != excludeId)
+        }
+    }
     suspend fun search(query: String): List<Employee> = withContext(Dispatchers.IO) {
         repository.findByEmailContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
             query, query, query
