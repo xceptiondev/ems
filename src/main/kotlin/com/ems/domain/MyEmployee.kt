@@ -8,10 +8,10 @@ class MyEmployee {
     val firstName: String = ""
     val lastName: String = ""
     val email: String = ""
-    val position: String,
-    val department: String,
-    val salary: Double,
-    val hireDate: LocalDate,
-    val phoneNumber: String? = null,
+    val position: String = ""
+    val department: String = ""
+    val salary: Double = 0.0
+    val hireDate: LocalDate = LocalDate.now()
+    val phoneNumber: String? = null
     val address: String? = null
 }
