@@ -1,5 +1,6 @@
 package com.ems.ui.components
 
+import com.ems.domain.Employee
 import com.ems.domain.MyEmployee
 import com.ems.services.MyEmployeeService
 import com.vaadin.flow.component.*
@@ -151,7 +152,7 @@ class MyEmployeeFormDialog(
                 firstName.isInvalid = status.isError
                 firstName.errorMessage = status.message.orElse(null)
             }
-            .bind({ it.firstName }, { obj, value -> obj.copy(firstName = value) })
+            .bind(MyEmployee::firstName, MyEmployee::firstName::set)
 
         // Last Name
         forField(lastName)
@@ -160,10 +161,7 @@ class MyEmployeeFormDialog(
                 { it.isNotBlank() && it.length >= 2 },
                 "Must be at least 2 characters"
             )
-            .bind(
-                { it.lastName },
-                { obj, value -> obj.copy(lastName = value) }
-            )
+            .bind(MyEmployee::lastName, MyEmployee::lastName::set)
 
         // Email
         forField(email)
@@ -178,10 +176,7 @@ class MyEmployeeFormDialog(
                     }
                 }
             }, "Email already registered")
-            .bind(
-                { it.email },
-                { obj, value -> obj.copy(email = value) }
-            )
+            .bind(MyEmployee::email, MyEmployee::email::set)
 
         // Position
         forField(position)
@@ -189,7 +184,7 @@ class MyEmployeeFormDialog(
                 { it.isNotBlank() },
                 "Position cannot be empty"
             )
-            .bind({ it.position },{ obj, value -> obj.copy(position = value) })
+            .bind(MyEmployee::position, MyEmployee::position::set)
 
         // Department
         forField(department)
@@ -201,7 +196,7 @@ class MyEmployeeFormDialog(
                 { it.isNotBlank() },
                 "Please select a department"
             )
-            .bind({ it.department },{ obj, value -> obj.copy(department = value) })
+            .bind(MyEmployee::department, MyEmployee::department::set)
 
         // Salary
         forField(salary)
@@ -213,7 +208,7 @@ class MyEmployeeFormDialog(
                 { it >= 0 },
                 "Salary cannot be negative"
             )
-            .bind({ it.salary },{ obj, value -> obj.copy(salary = value) })
+            .bind(MyEmployee::salary, MyEmployee::salary::set)
 
         // Hire Date
         forField(hireDate)
@@ -221,7 +216,7 @@ class MyEmployeeFormDialog(
                 { it != null && !it.isAfter(LocalDate.now()) },
                 "Hire date cannot be in the future"
             )
-            .bind({ it.hireDate },{ obj, value -> obj.copy(hireDate = value) })
+            .bind(MyEmployee::hireDate, MyEmployee::hireDate::set)
 
         // Phone Number
         forField(phoneNumber)
@@ -229,7 +224,7 @@ class MyEmployeeFormDialog(
                 { it.isNullOrBlank() || it.matches(Regex("^[+\\d\\s-]{10,}\$")) },
                 "Invalid phone number format"
             )
-            .bind({ it.phoneNumber },{ obj, value -> obj.copy(phoneNumber = value) })
+            .bind(MyEmployee::phoneNumber, MyEmployee::phoneNumber::set)
 
         // Address
         forField(address)
@@ -241,7 +236,7 @@ class MyEmployeeFormDialog(
 
         addStatusChangeListener { event -> saveButton.isEnabled = event.binder.isValid && !isLoading }
 
-        //writeBeanIfValid(MyEmployee()) // Initialize with empty employee
+        writeBeanIfValid(MyEmployee()) // Initialize with empty employee
     }
 
     init {
@@ -292,7 +287,7 @@ class MyEmployeeFormDialog(
 
     private fun handleSave() {
         if (isLoading) return
-        val employee = currentEmployee ?: Employee()
+        val employee = currentEmployee ?: MyEmployee()
         if(binder.writeBeanIfValid(employee)){
             setLoading(true)
             CoroutineScope(Dispatchers.IO).launch{
@@ -330,6 +325,6 @@ class MyEmployeeFormDialog(
     }
 
     // Custom Events
-    class SaveEvent(source: Component, val employee: Employee) : ComponentEvent<Component>(source, false)
-    class DeleteEvent(source: Component, val employee: Employee) : ComponentEvent<Component>(source, false)
+    class SaveEvent(source: Component, val employee: MyEmployee) : ComponentEvent<Component>(source, false)
+    class DeleteEvent(source: Component, val employee: MyEmployee) : ComponentEvent<Component>(source, false)
 }

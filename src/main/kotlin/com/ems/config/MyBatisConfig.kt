@@ -6,11 +6,13 @@ import org.apache.ibatis.mapping.Environment
 import org.apache.ibatis.session.SqlSessionFactory
 import org.apache.ibatis.session.SqlSessionFactoryBuilder
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory
+import org.mybatis.spring.annotation.MapperScan
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 // src/main/java/com/ems/config/MyBatisConfig.kt
 @Configuration
+@MapperScan("com.ems.mapper")
 class MyBatisConfig {
     @Bean
     fun sqlSessionFactory(dataSource: DataSource): SqlSessionFactory {

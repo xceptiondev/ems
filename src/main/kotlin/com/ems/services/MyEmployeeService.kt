@@ -19,5 +19,5 @@ class MyEmployeeService(
     fun delete(id: Long) = repository.delete(id)
     fun find(id: Long): MyEmployee? = repository.findById(id)
     fun findAll(): List<MyEmployee> = repository.findAll()
-    open fun isEmailAvailable(email: String, excludedId: Long?): Boolean {return repository.isEmailAvailable(email, excludedId)}
+    open fun isEmailAvailable(email: String, excludedId: Long?): Boolean = repository.isEmailAvailable(email, excludedId)
 }

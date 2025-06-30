@@ -4,9 +4,11 @@ import com.ems.domain.MyEmployee
 import com.ems.mapper.EmployeeMapper
 import org.apache.ibatis.session.SqlSession
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 // src/main/java/com/ems/repository/EmployeeRepository.kt
 @Repository
+@Transactional
 class MyEmployeeRepository(
     private val sqlSession: SqlSession
 ) {

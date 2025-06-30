@@ -6,7 +6,7 @@
 
     <!-- 1. Result Map Definition -->
     <resultMap id="myEmployeeResultMap" type="com.ems.domain.MyEmployee">
-        <id property="employeeId" column="employee_id" jdbcType="BIGINT"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="firstName" column="first_name" jdbcType="VARCHAR"/>
         <result property="lastName" column="last_name" jdbcType="VARCHAR"/>
         <result property="email" column="email" jdbcType="VARCHAR"/>
@@ -20,7 +20,7 @@
 
     <!-- 2. Create (Insert) -->
     <insert id="insert" parameterType="com.ems.domain.MyEmployee"
-            useGeneratedKeys="true" keyProperty="employeeId" keyColumn="employee_id">
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO employees (
         first_name, last_name, email, position,
         department, salary, hire_date, phone_number, address

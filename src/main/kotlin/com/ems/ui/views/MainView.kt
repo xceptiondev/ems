@@ -41,7 +41,10 @@ class MainView : AppLayout() {
     private fun createDrawer() {
         val employeeNav = SideNav().apply {
             addItem(
-                SideNavItem("Employee List", EmployeeListView::class.java, VaadinIcon.LIST.create())
+                SideNavItem("Employee List JPA", EmployeeListView::class.java, VaadinIcon.LIST.create())
+            )
+            addItem(
+                SideNavItem("Employee List MyBatis", MyEmployeeListView::class.java, VaadinIcon.LIST.create())
             )
         }
 
