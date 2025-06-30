@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ems.mapper.EmployeeMapper">
+
+    <!-- 1. Result Map Definition -->
+    <resultMap id="myEmployeeResultMap" type="com.ems.domain.MyEmployee">
+        <id property="employeeId" column="employee_id" jdbcType="BIGINT"/>
+        <result property="firstName" column="first_name" jdbcType="VARCHAR"/>
+        <result property="lastName" column="last_name" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="position" column="position" jdbcType="VARCHAR"/>
+        <result property="department" column="department" jdbcType="VARCHAR"/>
+        <result property="salary" column="salary" jdbcType="DECIMAL"/>
+        <result property="hireDate" column="hire_date" jdbcType="DATE"/>
+        <result property="phoneNumber" column="phone_number" jdbcType="VARCHAR"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 2. Create (Insert) -->
+    <insert id="insert" parameterType="com.ems.domain.MyEmployee"
+            useGeneratedKeys="true" keyProperty="employeeId" keyColumn="employee_id">
+        INSERT INTO employees (
+        first_name, last_name, email, position,
+        department, salary, hire_date, phone_number, address
+        ) VALUES (
+        #{firstName}, #{lastName}, #{email}, #{position},
+        #{department}, #{salary}, #{hireDate}, #{phoneNumber}, #{address}
+        )
+    </insert>
+
+    <!-- 3. Read (Select) -->
+    <select id="findById" parameterType="Long" resultMap="myEmployeeResultMap">
+        SELECT * FROM employees
+        WHERE employee_id = #{employeeId}
+    </select>
+
+    <select id="findAll" resultMap="myEmployeeResultMap">
+        SELECT * FROM employees
+        ORDER BY last_name, first_name
+    </select>
+
+    <select id="findByEmail" parameterType="String" resultMap="myEmployeeResultMap">
+        SELECT * FROM employees
+        WHERE email = #{email}
+    </select>
+
+    <!-- 4. Update -->
+    <update id="update" parameterType="com.ems.domain.MyEmployee">
+        UPDATE employees SET
+        first_name = #{firstName},
+        last_name = #{lastName},
+        email = #{email},
+        position = #{position},
+        department = #{department},
+        salary = #{salary},
+        hire_date = #{hireDate},
+        phone_number = #{phoneNumber},
+        address = #{address}
+        WHERE employee_id = #{employeeId}
+    </update>
+
+    <!-- 5. Delete -->
+    <delete id="delete" parameterType="Long">
+        DELETE FROM employees
+        WHERE employee_id = #{employeeId}
+    </delete>
+
+    <!-- 6. Custom Queries -->
+    <select id="isEmailAvailable" resultType="boolean">
+        SELECT COUNT(*) = 0 FROM employees
+        WHERE email = #{email}
+        <if test="excludeId != null">
+            AND employee_id != #{excludeId}
+        </if>
+    </select>
+
+    <select id="findByDepartment" parameterType="String" resultMap="myEmployeeResultMap">
+        SELECT * FROM employees
+        WHERE department = #{department}
+        ORDER BY last_name
+    </select>
+
+    <!-- 7. Batch Operations -->
+    <insert id="batchInsert" parameterType="list" useGeneratedKeys="true" keyProperty="employeeId">
+        INSERT INTO employees (
+        first_name, last_name, email, position,
+        department, salary, hire_date
+        ) VALUES
+        <foreach collection="list" item="emp" separator=",">
+            (#{emp.firstName}, #{emp.lastName}, #{emp.email}, #{emp.position},
+            #{emp.department}, #{emp.salary}, #{emp.hireDate})
+        </foreach>
+    </insert>
+</mapper>

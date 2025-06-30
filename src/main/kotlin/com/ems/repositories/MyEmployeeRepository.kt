@@ -1,0 +1,30 @@
+package com.ems.repositories
+
+import com.ems.domain.MyEmployee
+import com.ems.mapper.EmployeeMapper
+import org.apache.ibatis.session.SqlSession
+import org.springframework.stereotype.Repository
+
+// src/main/java/com/ems/repository/EmployeeRepository.kt
+@Repository
+class MyEmployeeRepository(
+    private val sqlSession: SqlSession
+) {
+    private val mapper: EmployeeMapper
+        get() = sqlSession.getMapper(EmployeeMapper::class.java)
+
+    fun save(employee: MyEmployee): MyEmployee {
+        if (employee.id == null) {
+            mapper.insert(employee)
+        } else {
+            mapper.update(employee)
+        }
+        return employee
+    }
+
+    fun delete(id: Long) = mapper.delete(id)
+    fun findById(id: Long): MyEmployee? = mapper.findById(id)
+    fun findAll(): List<MyEmployee> = mapper.findAll()
+    fun isEmailAvailable(email: String, excludeId: Long?): Boolean =
+        mapper.isEmailAvailable(email, excludeId)
+}

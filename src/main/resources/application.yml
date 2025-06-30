@@ -16,3 +16,10 @@ spring:
 vaadin:
   production-mode: false
   launch-browser: true
+
+mybatis:
+  mapper-locations: classpath:mybatis/mappers/*.xml
+  type-aliases-package: com.ems.domain
+  configuration:
+    map-underscore-to-camel-case: true # Converts first_name to firstName
+
