@@ -1,5 +1,7 @@
 package com.ems.ui.components
 
+import com.vaadin.flow.component.html.Image
+import com.vaadin.flow.component.upload.Upload
 import com.ems.domain.Employee
 import com.ems.services.EmployeeService
 import com.vaadin.flow.component.*
@@ -38,6 +40,19 @@ class EmployeeFormDialog(
     private var isLoading = false
     private var currentEmployee: Employee? = null
     val ui = UI.getCurrent()
+    private var uploadedPassportBytes: ByteArray? = null
+
+    private val passportPreview = Image().apply {
+        setHeight("120px")
+        isVisible = false
+    }
+
+    private val upload = Upload().apply {
+        setAcceptedFileTypes("image/jpeg", "image/png")
+        maxFiles = 1
+        isDropAllowed = true
+        setWidthFull()
+    }
 
     // Form Components
     private val header = H2("Employee Form").apply {
@@ -242,6 +257,20 @@ class EmployeeFormDialog(
         configureDialog()
         buildLayout()
         setupEventHandlers()
+
+        upload.receiver = Receiver { fileName, mimeType ->
+            val outputBuffer = java.io.ByteArrayOutputStream()
+            upload.addSucceededListener {
+                uploadedPassportBytes = outputBuffer.toByteArray()
+                currentEmployee?.passportPhoto = uploadedPassportBytes
+
+                // Update preview
+                passportPreview.src = "data:$mimeType;base64," + uploadedPassportBytes!!.encodeBase64()
+                passportPreview.isVisible = true
+            }
+            outputBuffer
+        }
+
     }
 
     fun open(employee: Employee? = null) {
