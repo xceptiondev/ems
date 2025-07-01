@@ -18,8 +18,7 @@ vaadin:
   launch-browser: true
 
 mybatis:
-  mapper-locations: classpath:mybatis/mappers/*.xml
-  type-aliases-package: com.ems.domain
+  mapper-locations: classpath*:com/ems/mapper/*.xml
+  type-aliases-package: com.ems.mapper
   configuration:
     map-underscore-to-camel-case: true # Converts first_name to firstName
-

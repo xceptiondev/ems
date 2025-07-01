@@ -232,7 +232,7 @@ class MyEmployeeFormDialog(
                 { it.isNullOrBlank() || it.length >= 5 },
                 "Address too short"
             )
-            .bind({ it.address },{ obj, value -> obj.copy(address = value) })
+            .bind(MyEmployee::address, MyEmployee::address::set)
 
         addStatusChangeListener { event -> saveButton.isEnabled = event.binder.isValid && !isLoading }
 

@@ -11,21 +11,21 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 // src/main/java/com/ems/config/MyBatisConfig.kt
-@Configuration
-@MapperScan("com.ems.mapper")
-class MyBatisConfig {
-    @Bean
-    fun sqlSessionFactory(dataSource: DataSource): SqlSessionFactory {
-        return SqlSessionFactoryBuilder()
-            .build(
-                org.apache.ibatis.session.Configuration().apply {
-                    addMapper(EmployeeMapper::class.java)
-                    environment = Environment(
-                        "default",
-                        JdbcTransactionFactory(),
-                        dataSource
-                    )
-                }
-            )
-    }
-}
+//@Configuration
+//@MapperScan("com.ems.mapper")
+//class MyBatisConfig {
+////    @Bean
+////    fun sqlSessionFactory(dataSource: DataSource): SqlSessionFactory {
+////        return SqlSessionFactoryBuilder()
+////            .build(
+////                org.apache.ibatis.session.Configuration().apply {
+////                    addMapper(EmployeeMapper::class.java)
+////                    environment = Environment(
+////                        "default",
+////                        JdbcTransactionFactory(),
+////                        dataSource
+////                    )
+////                }
+////            )
+////    }
+//}

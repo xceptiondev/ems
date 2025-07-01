@@ -13,5 +13,5 @@ data class MyEmployee(
     var salary: Double = 0.0,
     var hireDate: LocalDate = LocalDate.now(),
     var phoneNumber: String? = null,
-    val address: String? = null
+    var address: String? = null
 )
