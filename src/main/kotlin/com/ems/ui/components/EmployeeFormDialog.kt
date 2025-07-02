@@ -14,6 +14,7 @@ import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.H3
+import com.vaadin.flow.component.html.H5
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
@@ -272,6 +273,7 @@ class EmployeeFormDialog(
         maxFileSize = 2 * 1024 * 1024 // 2MB limit
         isDropAllowed = true
         width = "100%"
+        height = "100px"
 
         addFileRejectedListener { event ->
             Notification.show(event.errorMessage, 3000, Notification.Position.MIDDLE)
@@ -288,7 +290,7 @@ class EmployeeFormDialog(
         }
     }
     private fun buildUploadSection() = VerticalLayout().apply {
-        add(H3("Passport Photo"), upload, passportPreview, clearUploadButton)
+        add(H5("Passport Photo"), upload, passportPreview, clearUploadButton)
         width = "100%"
         alignItems = FlexComponent.Alignment.CENTER
     }
