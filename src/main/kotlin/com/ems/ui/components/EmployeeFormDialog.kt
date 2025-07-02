@@ -15,6 +15,7 @@ import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.progressbar.ProgressBar
@@ -40,7 +41,6 @@ class EmployeeFormDialog(
     private var isLoading = false
     private var currentEmployee: Employee? = null
     val ui = UI.getCurrent()
-    private var uploadedPassportBytes: ByteArray? = null
 
     private val passportPreview = Image().apply {
         setHeight("120px")
@@ -52,6 +52,44 @@ class EmployeeFormDialog(
         maxFiles = 1
         isDropAllowed = true
         setWidthFull()
+        setMaxFileSize(5 * 1024 * 1024) // 5MB limit
+
+        // New reactive way to handle uploads
+        receiveUpload = { fileName, mimeType, inputStream ->
+            try {
+                // Process the uploaded file
+                uploadedPassportBytes = inputStream.readAllBytes()
+                currentEmployee?.passportPhoto = uploadedPassportBytes
+
+                // Update preview on UI thread
+                UI.getCurrent().access {
+                    passportPreview.src = "data:$mimeType;base64," +
+                            Base64.getEncoder().encodeToString(uploadedPassportBytes!!)
+                    passportPreview.isVisible = true
+                }
+
+                // Return success result
+                Result.success("Upload successful")
+            } catch (e: Exception) {
+                Result.failure("Failed to process upload: ${e.message}")
+            }
+        }
+
+        addFileRejectedListener { event ->
+            Notification.show(
+                "File rejected: ${event.errorMessage}",
+                3000,
+                Notification.Position.MIDDLE
+            )
+        }
+
+        addFailedListener { event ->
+            Notification.show(
+                "Upload failed: ${event.reason}",
+                3000,
+                Notification.Position.MIDDLE
+            )
+        }
     }
 
     // Form Components
@@ -257,19 +295,6 @@ class EmployeeFormDialog(
         configureDialog()
         buildLayout()
         setupEventHandlers()
-
-        upload.receiver = Receiver { fileName, mimeType ->
-            val outputBuffer = java.io.ByteArrayOutputStream()
-            upload.addSucceededListener {
-                uploadedPassportBytes = outputBuffer.toByteArray()
-                currentEmployee?.passportPhoto = uploadedPassportBytes
-
-                // Update preview
-                passportPreview.src = "data:$mimeType;base64," + uploadedPassportBytes!!.encodeBase64()
-                passportPreview.isVisible = true
-            }
-            outputBuffer
-        }
 
     }
 
