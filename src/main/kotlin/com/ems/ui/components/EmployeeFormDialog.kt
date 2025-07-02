@@ -13,11 +13,13 @@ import com.vaadin.flow.component.datepicker.DatePicker
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.H2
+import com.vaadin.flow.component.html.H3
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
+import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.progressbar.ProgressBar
 import com.vaadin.flow.component.textfield.EmailField
 import com.vaadin.flow.component.textfield.NumberField
@@ -25,11 +27,13 @@ import com.vaadin.flow.component.textfield.TextArea
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.validator.EmailValidator
+import com.vaadin.flow.server.streams.UploadHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
+import java.util.Base64
 
 class EmployeeFormDialog(
     private val employeeService: EmployeeService,
@@ -41,56 +45,6 @@ class EmployeeFormDialog(
     private var isLoading = false
     private var currentEmployee: Employee? = null
     val ui = UI.getCurrent()
-
-    private val passportPreview = Image().apply {
-        setHeight("120px")
-        isVisible = false
-    }
-
-    private val upload = Upload().apply {
-        setAcceptedFileTypes("image/jpeg", "image/png")
-        maxFiles = 1
-        isDropAllowed = true
-        setWidthFull()
-        setMaxFileSize(5 * 1024 * 1024) // 5MB limit
-
-        // New reactive way to handle uploads
-        receiveUpload = { fileName, mimeType, inputStream ->
-            try {
-                // Process the uploaded file
-                uploadedPassportBytes = inputStream.readAllBytes()
-                currentEmployee?.passportPhoto = uploadedPassportBytes
-
-                // Update preview on UI thread
-                UI.getCurrent().access {
-                    passportPreview.src = "data:$mimeType;base64," +
-                            Base64.getEncoder().encodeToString(uploadedPassportBytes!!)
-                    passportPreview.isVisible = true
-                }
-
-                // Return success result
-                Result.success("Upload successful")
-            } catch (e: Exception) {
-                Result.failure("Failed to process upload: ${e.message}")
-            }
-        }
-
-        addFileRejectedListener { event ->
-            Notification.show(
-                "File rejected: ${event.errorMessage}",
-                3000,
-                Notification.Position.MIDDLE
-            )
-        }
-
-        addFailedListener { event ->
-            Notification.show(
-                "Upload failed: ${event.reason}",
-                3000,
-                Notification.Position.MIDDLE
-            )
-        }
-    }
 
     // Form Components
     private val header = H2("Employee Form").apply {
@@ -291,6 +245,54 @@ class EmployeeFormDialog(
         writeBeanIfValid(Employee()) // Initialize with empty employee
     }
 
+    private var uploadedPassportBytes: ByteArray? = null
+    private val passportPreview = Image().apply {
+        height = "120px"
+        isVisible = false
+        style["border"] = "1px dashed #ccc"
+    }
+
+    // Create in-memory upload handler
+    private val passportUploadHandler = UploadHandler.inMemory { metadata, data ->
+        uploadedPassportBytes = data
+        currentEmployee?.passportPhoto = data
+
+        UI.getCurrent().access {
+            passportPreview.src = "data:${metadata.contentType};base64," +
+                    Base64.getEncoder().encodeToString(data)
+            passportPreview.isVisible = true
+            clearUploadButton.isVisible = true
+            Notification.show("Passport photo uploaded", 2000, Notification.Position.MIDDLE)
+        }
+    }
+
+    // Upload component
+    private val upload = Upload(passportUploadHandler).apply {
+        setAcceptedFileTypes("image/jpeg", "image/png")
+        maxFileSize = 2 * 1024 * 1024 // 2MB limit
+        isDropAllowed = true
+        width = "100%"
+
+        addFileRejectedListener { event ->
+            Notification.show(event.errorMessage, 3000, Notification.Position.MIDDLE)
+        }
+    }
+    private val clearUploadButton = Button("Remove", VaadinIcon.TRASH.create()).apply {
+        addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL)
+        isVisible = false
+        addClickListener {
+            uploadedPassportBytes = null
+            currentEmployee?.passportPhoto = null
+            passportPreview.isVisible = false
+            isVisible = false
+        }
+    }
+    private fun buildUploadSection() = VerticalLayout().apply {
+        add(H3("Passport Photo"), upload, passportPreview, clearUploadButton)
+        width = "100%"
+        alignItems = FlexComponent.Alignment.CENTER
+    }
+
     init {
         configureDialog()
         buildLayout()
@@ -302,6 +304,19 @@ class EmployeeFormDialog(
         currentEmployee = employee?.copy() ?: Employee()
         binder.readBean(currentEmployee)
         deleteButton.isVisible = (employee != null && onDelete != null)
+
+        currentEmployee?.passportPhoto?.let { bytes ->
+            uploadedPassportBytes = bytes
+            passportPreview.src = "data:image/jpeg;base64,${Base64.getEncoder().encodeToString(bytes)}"
+            passportPreview.isVisible = true
+            clearUploadButton.isVisible = true
+        } ?: run {
+            // Clear photo state if no photo exists
+            passportPreview.isVisible = false
+            clearUploadButton.isVisible = false
+            uploadedPassportBytes = null
+        }
+
         open()
     }
     private fun validateSalaryForManager() {
@@ -321,14 +336,15 @@ class EmployeeFormDialog(
 
     private fun buildLayout() {
         val formLayout = FormLayout().apply {
-            add(firstName, lastName, email, position, department, salary, hireDate, phoneNumber, address)
+            val passportSection = buildUploadSection()
+            add(passportSection, firstName, lastName, email, position, department, salary, hireDate, phoneNumber, address)
             setResponsiveSteps(FormLayout.ResponsiveStep("0", 2))
+            setColspan(passportSection, 2)
         }
 
         val buttonLayout = HorizontalLayout(saveButton, deleteButton, cancelButton).apply {
             justifyContentMode = FlexComponent.JustifyContentMode.END
         }
-
         add(header, progressBar, formLayout, buttonLayout)
     }
 

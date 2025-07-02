@@ -34,5 +34,10 @@ data class Employee(
     var phoneNumber: String? = null,
 
     @Column(nullable = true)
-    var address: String? = null
+    var address: String? = null,
+
+    @Lob // For large binary data
+    @Basic(fetch = FetchType.LAZY) // Load only when accessed
+    @Column(nullable = true)
+    var passportPhoto: ByteArray? = null
 )
