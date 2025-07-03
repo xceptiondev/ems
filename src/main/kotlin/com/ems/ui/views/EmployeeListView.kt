@@ -2,6 +2,7 @@ package com.ems.ui.views
 
 import com.ems.domain.Employee
 import com.ems.services.EmployeeService
+import com.ems.services.MyEmployeeService
 import com.ems.ui.components.EmployeeFormDialog
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.ButtonVariant
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 
 @Route(value = "employees", layout = MainView::class)
 class EmployeeListView(
-    private val employeeService: EmployeeService,
+    private val employeeService: MyEmployeeService,
 ) : VerticalLayout() {
 
     val ui = UI.getCurrent()

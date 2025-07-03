@@ -5,7 +5,7 @@
 <mapper namespace="com.ems.mapper.EmployeeMapper">
 
     <!-- 1. Result Map Definition -->
-    <resultMap id="myEmployeeResultMap" type="com.ems.domain.MyEmployee">
+    <resultMap id="employeeResultMap" type="com.ems.domain.Employee">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="firstName" column="first_name" jdbcType="VARCHAR"/>
         <result property="lastName" column="last_name" jdbcType="VARCHAR"/>
@@ -19,7 +19,7 @@
     </resultMap>
 
     <!-- 2. Create (Insert) -->
-    <insert id="insert" parameterType="com.ems.domain.MyEmployee"
+    <insert id="insert" parameterType="com.ems.domain.Employee"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO employees (
         first_name, last_name, email, position,
@@ -31,23 +31,23 @@
     </insert>
 
     <!-- 3. Read (Select) -->
-    <select id="findById" parameterType="Long" resultMap="myEmployeeResultMap">
+    <select id="findById" parameterType="Long" resultMap="employeeResultMap">
         SELECT * FROM employees
         WHERE employee_id = #{employeeId}
     </select>
 
-    <select id="findAll" resultMap="myEmployeeResultMap">
+    <select id="findAll" resultMap="employeeResultMap">
         SELECT * FROM employees
         ORDER BY last_name, first_name
     </select>
 
-    <select id="findByEmail" parameterType="String" resultMap="myEmployeeResultMap">
+    <select id="findByEmail" parameterType="String" resultMap="employeeResultMap">
         SELECT * FROM employees
         WHERE email = #{email}
     </select>
 
     <!-- 4. Update -->
-    <update id="update" parameterType="com.ems.domain.MyEmployee">
+    <update id="update" parameterType="com.ems.domain.Employee">
         UPDATE employees SET
         first_name = #{firstName},
         last_name = #{lastName},
@@ -76,7 +76,7 @@
         </if>
     </select>
 
-    <select id="findByDepartment" parameterType="String" resultMap="myEmployeeResultMap">
+    <select id="findByDepartment" parameterType="String" resultMap="employeeResultMap">
         SELECT * FROM employees
         WHERE department = #{department}
         ORDER BY last_name

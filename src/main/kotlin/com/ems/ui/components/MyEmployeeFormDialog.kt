@@ -1,7 +1,6 @@
 package com.ems.ui.components
 
 import com.ems.domain.Employee
-import com.ems.domain.MyEmployee
 import com.ems.services.MyEmployeeService
 import com.vaadin.flow.component.*
 import com.vaadin.flow.component.button.Button
@@ -31,13 +30,13 @@ import java.time.LocalDate
 
 class MyEmployeeFormDialog(
     private val myEmployeeService: MyEmployeeService,
-    private val onSave: suspend (MyEmployee) -> Unit,
-    private val onDelete: ((MyEmployee) -> Unit)? = null
+    private val onSave: suspend (Employee) -> Unit,
+    private val onDelete: ((Employee) -> Unit)? = null
 ) : Dialog() {
 
     // State
     private var isLoading = false
-    private var currentEmployee: MyEmployee? = null
+    private var currentEmployee: Employee? = null
     val ui = UI.getCurrent()
 
     // Form Components
@@ -140,7 +139,7 @@ class MyEmployeeFormDialog(
     }
 
     // Binder with advanced validation
-    private val binder = Binder<MyEmployee>(MyEmployee::class.java).apply {
+    private val binder = Binder<Employee>(Employee::class.java).apply {
         // First Name
         forField(firstName)
             .asRequired("First name is required")
@@ -152,7 +151,7 @@ class MyEmployeeFormDialog(
                 firstName.isInvalid = status.isError
                 firstName.errorMessage = status.message.orElse(null)
             }
-            .bind(MyEmployee::firstName, MyEmployee::firstName::set)
+            .bind(Employee::firstName, Employee::firstName::set)
 
         // Last Name
         forField(lastName)
@@ -161,7 +160,7 @@ class MyEmployeeFormDialog(
                 { it.isNotBlank() && it.length >= 2 },
                 "Must be at least 2 characters"
             )
-            .bind(MyEmployee::lastName, MyEmployee::lastName::set)
+            .bind(Employee::lastName, Employee::lastName::set)
 
         // Email
         forField(email)
@@ -176,7 +175,7 @@ class MyEmployeeFormDialog(
                     }
                 }
             }, "Email already registered")
-            .bind(MyEmployee::email, MyEmployee::email::set)
+            .bind(Employee::email, Employee::email::set)
 
         // Position
         forField(position)
@@ -184,7 +183,7 @@ class MyEmployeeFormDialog(
                 { it.isNotBlank() },
                 "Position cannot be empty"
             )
-            .bind(MyEmployee::position, MyEmployee::position::set)
+            .bind(Employee::position, Employee::position::set)
 
         // Department
         forField(department)
@@ -196,7 +195,7 @@ class MyEmployeeFormDialog(
                 { it.isNotBlank() },
                 "Please select a department"
             )
-            .bind(MyEmployee::department, MyEmployee::department::set)
+            .bind(Employee::department, Employee::department::set)
 
         // Salary
         forField(salary)
@@ -208,7 +207,7 @@ class MyEmployeeFormDialog(
                 { it >= 0 },
                 "Salary cannot be negative"
             )
-            .bind(MyEmployee::salary, MyEmployee::salary::set)
+            .bind(Employee::salary, Employee::salary::set)
 
         // Hire Date
         forField(hireDate)
@@ -216,7 +215,7 @@ class MyEmployeeFormDialog(
                 { it != null && !it.isAfter(LocalDate.now()) },
                 "Hire date cannot be in the future"
             )
-            .bind(MyEmployee::hireDate, MyEmployee::hireDate::set)
+            .bind(Employee::hireDate, Employee::hireDate::set)
 
         // Phone Number
         forField(phoneNumber)
@@ -224,7 +223,7 @@ class MyEmployeeFormDialog(
                 { it.isNullOrBlank() || it.matches(Regex("^[+\\d\\s-]{10,}\$")) },
                 "Invalid phone number format"
             )
-            .bind(MyEmployee::phoneNumber, MyEmployee::phoneNumber::set)
+            .bind(Employee::phoneNumber, Employee::phoneNumber::set)
 
         // Address
         forField(address)
@@ -232,11 +231,11 @@ class MyEmployeeFormDialog(
                 { it.isNullOrBlank() || it.length >= 5 },
                 "Address too short"
             )
-            .bind(MyEmployee::address, MyEmployee::address::set)
+            .bind(Employee::address, Employee::address::set)
 
         addStatusChangeListener { event -> saveButton.isEnabled = event.binder.isValid && !isLoading }
 
-        writeBeanIfValid(MyEmployee()) // Initialize with empty employee
+        writeBeanIfValid(Employee()) // Initialize with empty employee
     }
 
     init {
@@ -245,8 +244,8 @@ class MyEmployeeFormDialog(
         setupEventHandlers()
     }
 
-    fun open(employee: MyEmployee? = null) {
-        currentEmployee = employee?.copy() ?: MyEmployee()
+    fun open(employee: Employee? = null) {
+        currentEmployee = employee?.copy() ?: Employee()
         binder.readBean(currentEmployee)
         deleteButton.isVisible = (employee != null && onDelete != null)
         open()
@@ -287,7 +286,7 @@ class MyEmployeeFormDialog(
 
     private fun handleSave() {
         if (isLoading) return
-        val employee = currentEmployee ?: MyEmployee()
+        val employee = currentEmployee ?: Employee()
         if(binder.writeBeanIfValid(employee)){
             setLoading(true)
             CoroutineScope(Dispatchers.IO).launch{
@@ -325,6 +324,6 @@ class MyEmployeeFormDialog(
     }
 
     // Custom Events
-    class SaveEvent(source: Component, val employee: MyEmployee) : ComponentEvent<Component>(source, false)
-    class DeleteEvent(source: Component, val employee: MyEmployee) : ComponentEvent<Component>(source, false)
+    class SaveEvent(source: Component, val employee: Employee) : ComponentEvent<Component>(source, false)
+    class DeleteEvent(source: Component, val employee: Employee) : ComponentEvent<Component>(source, false)
 }

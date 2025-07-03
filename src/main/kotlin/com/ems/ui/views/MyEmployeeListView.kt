@@ -1,6 +1,6 @@
 package com.ems.ui.views
 
-import com.ems.domain.MyEmployee
+import com.ems.domain.Employee
 import com.ems.services.MyEmployeeService
 import com.ems.ui.components.MyEmployeeFormDialog
 import com.vaadin.flow.component.UI
@@ -27,7 +27,7 @@ class MyEmployeeListView(
 ) : VerticalLayout() {
 
     val ui = UI.getCurrent()
-    private val grid = Grid<MyEmployee>()
+    private val grid = Grid<Employee>()
     private val filter = TextField().apply {
         placeholder = "Filter by name or email"
         setPrefixComponent(VaadinIcon.SEARCH.create())
@@ -106,10 +106,10 @@ class MyEmployeeListView(
 
     private fun configureGrid() {
         grid.setSelectionMode(Grid.SelectionMode.SINGLE)
-        grid.addColumn(MyEmployee::firstName).setHeader("First Name").setSortable(true)
-        grid.addColumn(MyEmployee::lastName).setHeader("Last Name").setSortable(true)
-        grid.addColumn(MyEmployee::email).setHeader("Email").setSortable(true)
-        grid.addColumn(MyEmployee::position).setHeader("Position")
+        grid.addColumn(Employee::firstName).setHeader("First Name").setSortable(true)
+        grid.addColumn(Employee::lastName).setHeader("Last Name").setSortable(true)
+        grid.addColumn(Employee::email).setHeader("Email").setSortable(true)
+        grid.addColumn(Employee::position).setHeader("Position")
 
         // Enhanced action buttons
         grid.addComponentColumn { employee ->
@@ -139,7 +139,7 @@ class MyEmployeeListView(
             }
         }
     }
-    private fun showDeleteConfirmation(employee: MyEmployee) {
+    private fun showDeleteConfirmation(employee: Employee) {
         ConfirmDialog(
             "Confirm Delete",
             "Are you sure you want to delete ${employee.firstName} ${employee.lastName}?",

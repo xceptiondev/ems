@@ -1,6 +1,6 @@
 package com.ems.services
 
-import com.ems.domain.MyEmployee
+import com.ems.domain.Employee
 import com.ems.repositories.MyEmployeeRepository
 import org.springframework.stereotype.Service
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 class MyEmployeeService(
     private val repository: MyEmployeeRepository
 ) {
-    fun save(employee: MyEmployee): MyEmployee {
+    fun save(employee: Employee): Employee {
         require(repository.isEmailAvailable(employee.email, employee.id)) {
             "Email already registered"
         }
@@ -17,7 +17,7 @@ class MyEmployeeService(
     }
 
     fun delete(id: Long) = repository.delete(id)
-    fun find(id: Long): MyEmployee? = repository.findById(id)
-    fun findAll(): List<MyEmployee> = repository.findAll()
+    fun find(id: Long): Employee? = repository.findById(id)
+    fun findAll(): List<Employee> = repository.findAll()
     open fun isEmailAvailable(email: String, excludedId: Long?): Boolean = repository.isEmailAvailable(email, excludedId)
 }

@@ -3,7 +3,7 @@ package com.ems.ui.components
 import com.vaadin.flow.component.html.Image
 import com.vaadin.flow.component.upload.Upload
 import com.ems.domain.Employee
-import com.ems.services.EmployeeService
+import com.ems.services.MyEmployeeService
 import com.vaadin.flow.component.*
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
@@ -13,7 +13,6 @@ import com.vaadin.flow.component.datepicker.DatePicker
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.H2
-import com.vaadin.flow.component.html.H3
 import com.vaadin.flow.component.html.H5
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -37,7 +36,7 @@ import java.time.LocalDate
 import java.util.Base64
 
 class EmployeeFormDialog(
-    private val employeeService: EmployeeService,
+    private val employeeService: MyEmployeeService,
     private val onSave: suspend (Employee) -> Unit,
     private val onDelete: ((Employee) -> Unit)? = null
 ) : Dialog() {
