@@ -16,6 +16,8 @@
         <result property="hireDate" column="hire_date" jdbcType="DATE"/>
         <result property="phoneNumber" column="phone_number" jdbcType="VARCHAR"/>
         <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="passportPhoto" column="passport_photo" jdbcType="BLOB"
+        typeHandler="org.apache.ibatis.type.ByteArrayTypeHandler"/>
     </resultMap>
 
     <!-- 2. Create (Insert) -->
@@ -23,17 +25,17 @@
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO employees (
         first_name, last_name, email, position,
-        department, salary, hire_date, phone_number, address
+        department, salary, hire_date, phone_number, address, passport_photo
         ) VALUES (
         #{firstName}, #{lastName}, #{email}, #{position},
-        #{department}, #{salary}, #{hireDate}, #{phoneNumber}, #{address}
+        #{department}, #{salary}, #{hireDate}, #{phoneNumber}, #{address}, #{passportPhoto}
         )
     </insert>
 
     <!-- 3. Read (Select) -->
     <select id="findById" parameterType="Long" resultMap="employeeResultMap">
         SELECT * FROM employees
-        WHERE employee_id = #{employeeId}
+        WHERE id = #{employeeId}
     </select>
 
     <select id="findAll" resultMap="employeeResultMap">
@@ -57,14 +59,15 @@
         salary = #{salary},
         hire_date = #{hireDate},
         phone_number = #{phoneNumber},
-        address = #{address}
-        WHERE employee_id = #{employeeId}
+        address = #{address},
+        passport_photo = #{passportPhoto}
+        WHERE id = #{id}
     </update>
 
     <!-- 5. Delete -->
     <delete id="delete" parameterType="Long">
         DELETE FROM employees
-        WHERE employee_id = #{employeeId}
+        WHERE id = #{employeeId}
     </delete>
 
     <!-- 6. Custom Queries -->
@@ -72,7 +75,7 @@
         SELECT COUNT(*) = 0 FROM employees
         WHERE email = #{email}
         <if test="excludeId != null">
-            AND employee_id != #{excludeId}
+            AND id != #{excludeId}
         </if>
     </select>
 

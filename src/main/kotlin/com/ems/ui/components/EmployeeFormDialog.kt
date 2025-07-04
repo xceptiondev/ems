@@ -3,6 +3,7 @@ package com.ems.ui.components
 import com.vaadin.flow.component.html.Image
 import com.vaadin.flow.component.upload.Upload
 import com.ems.domain.Employee
+import com.ems.services.EmployeeService
 import com.ems.services.MyEmployeeService
 import com.vaadin.flow.component.*
 import com.vaadin.flow.component.button.Button

@@ -38,6 +38,6 @@ data class Employee(
 
     @Lob // For large binary data
     @Basic(fetch = FetchType.LAZY) // Load only when accessed
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "BYTEA")
     var passportPhoto: ByteArray? = null
 )
